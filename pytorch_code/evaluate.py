@@ -68,12 +68,12 @@ def evaluate(
 
         loss = bce_loss(mask, gt_mask)
 
-        inter, union = compute_mask_IOU(
-            mask, gt_mask, args.threshold
-        )
+        # inter, union = compute_mask_IOU(
+        #     mask, gt_mask, args.threshold
+        # )
 
-        total_inter += inter.item()
-        total_union += union.item()
+        # total_inter += inter.item()
+        # total_union += union.item()
         
         accuracy = 0
         total_accuracy += accuracy

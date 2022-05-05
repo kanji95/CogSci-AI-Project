@@ -71,11 +71,10 @@ def train(
         end_time = time()
         elapsed_time = end_time - start_time
         
-        
-        with torch.no_grad():
-            inter, union = compute_mask_IOU(mask, gt_mask, args.threshold)
-        total_inter += inter.item()
-        total_union += union.item()
+        # with torch.no_grad():
+        #     inter, union = compute_mask_IOU(mask, gt_mask, args.threshold)
+        # total_inter += inter.item()
+        # total_union += union.item()
         
         total_loss += float(loss.item())
         if iterId % 200 == 0 and step != 0:

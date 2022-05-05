@@ -145,33 +145,6 @@ def main(args):
             "pytorch/vision:v0.6.1", args.image_encoder, pretrained=True
         )
         image_encoder = IntermediateLayerGetter(model, return_layers)
-    elif args.image_encoder == "deeplabv2":
-        stride = 2
-        model = DeepLabV2(n_classes=181, n_blocks=[3, 4, 23, 3], atrous_rates=[6, 12, 18, 24])
-        
-        state_dict = torch.load("./models/deeplabv1_resnet101-coco.pth", map_location=lambda storage, loc: storage)
-
-        model.load_state_dict(state_dict, strict=False)
-
-        return_layers = {"layer3": "layer2", "layer4": "layer3", "layer5": "layer4"}
-        image_encoder = IntermediateLayerGetter(model, return_layers)
-    elif args.image_encoder == "deeplabv3_resnet101":
-        stride = 2
-        model = torch.hub.load(
-            "pytorch/vision:v0.6.1", args.image_encoder, pretrained=True
-        )
-        image_encoder = IntermediateLayerGetter(model.backbone, return_layers)
-    elif args.image_encoder == "deeplabv3_plus":
-        stride = 2
-        model = DeepLab(num_classes=21, backbone="resnet", output_stride=16)
-        model.load_state_dict(
-            torch.load("./models/deeplab-resnet.pth.tar")["state_dict"]
-        )
-        image_encoder = IntermediateLayerGetter(model.backbone, return_layers)
-    elif args.image_encoder == "dino":
-        stride = 2
-        resnet50 = torch.hub.load('facebookresearch/dino:main', 'dino_resnet50', force_reload=True)
-        image_encoder = IntermediateLayerGetter(resnet50, return_layers)
     else:
         raise NotImplemented("Model not implemented")
 
@@ -179,21 +152,12 @@ def main(args):
         param.requires_grad_(False)
     image_encoder.eval()
 
-    joint_model = JointModel(
-        args,
-        sfm_dim=args.sfm_dim,
-        out_channels=args.channel_dim,
-        stride=stride,
-        num_layers=args.num_layers,
-        num_encoder_layers=args.num_encoder_layers,
-        dropout=args.dropout,
-        mask_dim=args.mask_dim,
-    )
+    brain_model = None
 
-    wandb.watch(joint_model, log="all")
+    wandb.watch(brain_model, log="all")
 
     total_parameters = 0
-    for name, child in joint_model.named_children():
+    for name, child in brain_model.named_children():
         num_params = sum([p.numel() for p in child.parameters() if p.requires_grad])
         if num_params > 0:
             print_(f"No. of params in {name}: {num_params}")
@@ -203,12 +167,12 @@ def main(args):
 
     if n_gpu > 1:
         image_encoder = nn.DataParallel(image_encoder)
-        joint_model = nn.DataParallel(joint_model)
+        brain_model = nn.DataParallel(brain_model)
 
-    joint_model.to(device)
+    brain_model.to(device)
     image_encoder.to(device)
 
-    params = list([p for p in joint_model.parameters() if p.requires_grad])
+    params = list([p for p in brain_model.parameters() if p.requires_grad])
 
     optimizer = AdamW(params, lr=args.lr, weight_decay=args.weight_decay)
 
@@ -286,11 +250,11 @@ def main(args):
 
     for epochId in range(args.epochs):
 
-        train(train_loader, joint_model, image_encoder, 
+        train(train_loader, brain_model, image_encoder, 
                 optimizer, experiment, epochId,
                 args)
 
-        val_loss, val_acc = evaluate(val_loader, joint_model, image_encoder,
+        val_loss, val_acc = evaluate(val_loader, brain_model, image_encoder,
                                         epochId, args)
 
         wandb.log({"val_loss": val_loss, "val_IOU": val_acc})
@@ -305,7 +269,7 @@ def main(args):
                 torch.save(
                     {
                         "epoch": epochId,
-                        "state_dict": joint_model.state_dict(),
+                        "state_dict": brain_model.state_dict(),
                         "optimizer": optimizer.state_dict(),
                     },
                     model_filename,
