@@ -12,25 +12,35 @@ data_train, data_test, glove_train, glove_test, data_fine, data_fine_test, glove
 # print(data_train.shape, data_test.shape)
 
 print(f'data_train: {data_train.shape}')
-np.save(data_root + 'data_train.npy', data_train)
+# np.save(data_root + 'data_train.npy', data_train)
 
 print(f'data_test: {data_test.shape}')
-np.save(data_root + 'data_test.npy', data_test)
+# np.save(data_root + 'data_test.npy', data_test)
 
 print(f'glove_train: {glove_train.shape}')
-np.save(data_root + 'glove_train.npy', glove_train)
+# np.save(data_root + 'glove_train.npy', glove_train)
 
 print(f'glove_test: {glove_test.shape}')
-np.save(data_root + 'glove_test.npy', glove_test)
+# np.save(data_root + 'glove_test.npy', glove_test)
 
 print(f'data_fine: {data_fine.shape}')
-np.save(data_root + 'data_fine.npy', data_fine)
+# np.save(data_root + 'data_fine.npy', data_fine)
 
 print(f'data_fine_test: {data_fine_test.shape}')
-np.save(data_root + 'data_fine_test.npy', data_fine_test)
+# np.save(data_root + 'data_fine_test.npy', data_fine_test)
 
 print(f'glove_fine: {glove_fine.shape}')
-np.save(data_root + 'glove_fine.npy', glove_fine)
+# np.save(data_root + 'glove_fine.npy', glove_fine)
 
 print(f'glove_fine_test: {glove_fine_test.shape}')
-np.save(data_root + 'glove_fine_test.npy', glove_fine_test)
+# np.save(data_root + 'glove_fine_test.npy', glove_fine_test)
+
+
+# data_train: (3903, 65730)
+# data_test: (540, 65730)
+# glove_train: (3903, 300)
+# glove_test: (540, 300)
+# data_fine: (7560, 65730)
+# data_fine_test: (540, 65730)
+# glove_fine: (7560, 300)
+# glove_fine_test: (540, 300)
