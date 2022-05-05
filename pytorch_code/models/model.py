@@ -26,12 +26,14 @@ class Baseline(nn.Module):
         self.regressor = nn.Linear(200, 300)
         self.classifier = nn.Linear(300, 180)
         
+        self.softmax = nn.Softmax(dim=-1)
+        
     def forward(self, x):
         latent = self.encoder(x)
         
         # recon_x = self.decoder(latent)
         reg_out = self.regressor(latent)
-        y_pred = self.classifier(reg_out)
+        y_pred = self.softmax(self.classifier(reg_out))
         
         return reg_out, y_pred
 

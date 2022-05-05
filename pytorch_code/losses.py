@@ -7,6 +7,25 @@ import torch.nn.functional as F
 import numpy as np
 
 
+# class MeanDistance_Loss:
+    
+#     def __call__(self, y_pred, y_true):
+        
+
+
+# def mean_distance_loss(y_true, y_pred):
+#     total = 0
+#     total_two = 0
+    
+#     val = 179
+#     for i in range((val+1)):
+#         if i == 0:
+#             total += (val*cosine_proximity(y_true,y_pred))
+#         else:
+#             rolled = tf.manip.roll(y_pred, i, axis=0)
+#             total_two -= cosine_proximity(y_true,rolled)
+#     return total_two/val + total/val
+
 class Dice_loss:
     def __call__(self, inputs, targets):
         """

@@ -6,14 +6,20 @@ import torch
 from torch.utils.data import Dataset
 
 
-class CustomDataset(Dataset):
-    def __init__(self, data_path, split):
+class FmriDataset(Dataset):
+    def __init__(self, data_root="/ssd_scratch/cvit/kanishk/simplified_data", split="train"):
         
-        self.data = np.load(data_path)
+        self.data_root = data_root
+        
+        self.data_fine = np.load(f'{data_root}/data_fine_{split}.npy')
+        self.glove_fine = np.load(f'{data_root}/glove_fine_{split}.npy')
+        self.class_fine = np.load(f'{data_root}/class_fine_{split}.npy')
     
     def __len__(self):
-        return len(self.data)
+        return len(self.data_fine)
 
     def __getitem__(self, idx):
-        img, label = self.data[idx]
-        return img, label
+        fmri_scan = self.data_fine[idx]
+        glove_emb = self.glove_fine[idx]
+        word_label = self.class_fine[idx]
+        return fmri_scan, glove_emb, word_label

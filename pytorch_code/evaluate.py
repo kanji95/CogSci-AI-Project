@@ -13,29 +13,32 @@ import torch.nn.functional as F
 from utilities.utils import print_
 # from utilities.metrics import compute_mask_IOU
 
+from pytorch_metric_learning import distances, losses, miners, reducers
+
 
 @torch.no_grad()
 def evaluate(
     val_loader,
-    joint_model,
-    image_encoder,
+    brain_model,
     epochId,
     args,
 ):
 
-    image_encoder.eval()
-    joint_model.eval()
+    brain_model.eval()
 
     pid = os.getpid()
     py = psutil.Process(pid)
 
     total_loss = 0
-    total_inter, total_union = 0, 0
-    total_accuracy = 0
-
-    feature_dim = args.feature_dim
-
-    bce_loss = nn.BCELoss()
+    total_acc = 0
+    
+    cross_entropy_loss = nn.CrossEntropyLoss()
+    
+    distance = distances.CosineSimilarity()
+    contrastive_loss = losses.ContrastiveLoss(pos_margin=0, neg_margin=1)
+    miner_func = miners.TripletMarginMiner(
+        margin=0.2, distance=distance, type_of_triplets="semihard"
+    )
 
     data_len = len(val_loader)
 
@@ -43,42 +46,29 @@ def evaluate(
         "\n================================================= Evaluating only Grounding Network ======================================================="
     )
 
+    num_examples = 0
     for step, batch in enumerate(val_loader):
 
-        img = batch["image"].cuda(non_blocking=True)
-        phrase = batch["phrase"].cuda(non_blocking=True)
-        phrase = phrase.squeeze(dim=1)
-        phrase_mask = batch["phrase_mask"].cuda(non_blocking=True)
+        batch = (x.cuda(non_blocking=True) for x in batch)
+        fmri_scan, glove_emb, word_label = batch
 
-        gt_mask = batch["seg_mask"].cuda(non_blocking=True)
-        gt_mask = gt_mask.squeeze(dim=1)
-
-        batch_size = img.shape[0]
-        img_mask = torch.ones(
-            batch_size, feature_dim * feature_dim, dtype=torch.int64
-        ).cuda(non_blocking=True)
+        batch_size = fmri_scan.shape[0]
 
         start_time = time()
 
-        img = image_encoder(img)
-        mask = joint_model(img, phrase, img_mask, phrase_mask)
-
+        reg_out, y_pred = brain_model(fmri_scan)
         end_time = time()
         elapsed_time = end_time - start_time
-
-        loss = bce_loss(mask, gt_mask)
-
-        # inter, union = compute_mask_IOU(
-        #     mask, gt_mask, args.threshold
-        # )
-
-        # total_inter += inter.item()
-        # total_union += union.item()
         
-        accuracy = 0
-        total_accuracy += accuracy
-
+        indices_tuple = miner_func(reg_out, y_pred)
+        loss = contrastive_loss(reg_out, glove_emb, indices_tuple) + cross_entropy_loss(y_pred, word_label)
+        
         total_loss += float(loss.item())
+
+        accuracy = (torch.argmax(y_pred) == word_label).sum()
+        total_acc += accuracy.item()
+        
+        num_examples += batch_size
 
         if step % 200 == 0:
             gc.collect()
@@ -86,23 +76,19 @@ def evaluate(
 
             timestamp = datetime.now().strftime("%Y|%m|%d-%H:%M")
 
-            curr_loss = total_loss / (step + 1)
-            overall_IOU = total_inter / total_union
-            curr_acc = total_accuracy / (step + 1)
+            curr_acc = total_acc / num_examples
 
             print_(
-                f"{timestamp} Validation: iter [{step:3d}/{data_len}] loss {curr_loss:.4f} overall_IOU {overall_IOU:.4f} curr_acc {curr_acc:.4f} memory_use {memoryUse:.3f}MB elapsed {elapsed_time:.2f}"
+                f"{timestamp} Validation: iter [{step:3d}/{data_len}] curr_acc {curr_acc:.4f} memory_use {memoryUse:.3f}MB elapsed {elapsed_time:.2f}"
             )
-
+            
+    val_acc = total_acc / num_examples
     val_loss = total_loss / data_len
-    val_IOU = total_inter / total_union
-
-    val_acc = total_accuracy / data_len
 
     timestamp = datetime.now().strftime("%Y|%m|%d-%H:%M")
     print_(
-        f"{timestamp} Validation: EpochId: {epochId:2d} loss {val_loss:.4f} overall_IOU {val_IOU:.4f} val_acc {val_acc:.4f}"
+        f"{timestamp} Validation: EpochId: {epochId:2d} val_acc {val_acc:.4f}"
     )
     print_("============================================================================================================================================\n")
     
-    return val_loss, val_IOU
+    return val_loss, val_acc

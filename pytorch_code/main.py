@@ -20,15 +20,11 @@ from torch.utils.data import DataLoader, RandomSampler
 from torch.optim import *
 from torchvision.models._utils import IntermediateLayerGetter
 
-# from models.modeling.deeplab import *
-
-# from models.deeplabv2 import DeepLabV2
-
-# from dataloader.referit_loader import *
+from .dataloader import FmriDataset
 
 from evaluate import evaluate
 # from losses import Loss
-# from models.model import JointModel
+from models.model import Baseline, ROIBaseline
 from train import train
 from utilities.utils import print_
 
@@ -48,7 +44,7 @@ def get_args_parser():
 
     # HYPER Params
     parser.add_argument("--lr", default=3e-4, type=float)
-    parser.add_argument("--batch_size", default=64, type=int)
+    parser.add_argument("--batch_size", default=16, type=int)
     parser.add_argument("--weight_decay", default=1e-3, type=float)
     parser.add_argument("--epochs", default=10, type=int)
     parser.add_argument("--gamma", default=0.7, type=float)
@@ -137,22 +133,7 @@ def main(args):
 
     ####################### Model Initialization #######################
 
-    return_layers = {"layer2": "layer2", "layer3": "layer3", "layer4": "layer4"}
-
-    if args.image_encoder == "resnet50" or args.image_encoder == "resnet101":
-        stride = 2
-        model = torch.hub.load(
-            "pytorch/vision:v0.6.1", args.image_encoder, pretrained=True
-        )
-        image_encoder = IntermediateLayerGetter(model, return_layers)
-    else:
-        raise NotImplemented("Model not implemented")
-
-    for param in image_encoder.parameters():
-        param.requires_grad_(False)
-    image_encoder.eval()
-
-    brain_model = None
+    brain_model = Baseline()
 
     wandb.watch(brain_model, log="all")
 
@@ -166,11 +147,9 @@ def main(args):
     print_(f"Total number of params: {total_parameters}")
 
     if n_gpu > 1:
-        image_encoder = nn.DataParallel(image_encoder)
         brain_model = nn.DataParallel(brain_model)
 
     brain_model.to(device)
-    image_encoder.to(device)
 
     params = list([p for p in brain_model.parameters() if p.requires_grad])
 
@@ -189,16 +168,8 @@ def main(args):
     print_("Initializing dataset")
     start = time()
 
-    normalize = transforms.Normalize(
-        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-    )
-
-    to_tensor = transforms.ToTensor()
-    resize = transforms.Resize((args.image_dim, args.image_dim))
-    random_grayscale = transforms.RandomGrayscale(p=0.3)
-
-    train_dataset = None # Brain2word Dataset
-    val_dataset = None # Brain2word Dataset
+    train_dataset = FmriDataset(split="train") # Brain2word Dataset
+    val_dataset = FmriDataset(split="test") # Brain2word Dataset
 
     end = time()
     elapsed = end - start
@@ -250,11 +221,11 @@ def main(args):
 
     for epochId in range(args.epochs):
 
-        train(train_loader, brain_model, image_encoder, 
+        train(train_loader, brain_model, 
                 optimizer, experiment, epochId,
                 args)
 
-        val_loss, val_acc = evaluate(val_loader, brain_model, image_encoder,
+        val_loss, val_acc = evaluate(val_loader, brain_model,
                                         epochId, args)
 
         wandb.log({"val_loss": val_loss, "val_IOU": val_acc})
