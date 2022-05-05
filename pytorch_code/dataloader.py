@@ -16,7 +16,7 @@ class FmriDataset(Dataset):
         self.class_fine = np.load(f'{data_root}/class_fine_{split}.npy')
 
         # print(self.data_fine)
-        print(self.class_fine)
+        # print(self.class_fine)
     
     def __len__(self):
         return len(self.data_fine)

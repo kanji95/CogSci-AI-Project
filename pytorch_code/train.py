@@ -78,16 +78,16 @@ def train(
         end_time = time()
         elapsed_time = end_time - start_time
         
-        accuracy, accuracy_five, accuracy_ten = top_5(y_pred, word_label)
+        accuracy, accuracy_five, accuracy_ten = top_5(y_pred.detach().cpu().numpy(), word_label.detach().cpu().numpy())
 
-        print('Accuracy_top1: ' + str(accuracy) + ' Accuracy_top5: ' + str(accuracy_five) + 'Accuracy_top10: ' + str(accuracy_ten))
+        # print('Accuracy_top1: ' + str(accuracy) + ' Accuracy_top5: ' + str(accuracy_five) + 'Accuracy_top10: ' + str(accuracy_ten))
         
-        total_acc = accuracy.item()
+        total_acc = accuracy
         total_loss += float(loss.item())
         
         num_examples += batch_size
         
-        if iterId % 200 == 0 and step != 0:
+        if iterId % 20 == 0 and step != 0:
             gc.collect()
             # print(pred_label, word_label)
             memoryUse = py.memory_info()[0] / 2.0 ** 20
@@ -95,6 +95,7 @@ def train(
             curr_loss = total_loss / (step + 1)
             curr_acc = total_acc / num_examples
             lr = optimizer.param_groups[0]["lr"]
+            print(f'Accuracy_top1: {accuracy:.4f}, Accuracy_top5: {accuracy_five:.4f}, Accuracy_top10: {accuracy_ten:.4f}')
             print_(
                 f"{timestamp} Epoch:[{epochId:2d}/{args.epochs:2d}] iter {iterId:6d} loss {curr_loss:.4f} acc {curr_acc:.4f} memory_use {memoryUse:.3f}MB lr {lr:.7f} elapsed {elapsed_time:.2f}"
             )
