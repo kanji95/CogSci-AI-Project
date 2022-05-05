@@ -11,6 +11,8 @@ import torch.nn.functional as F
 # from models.position_encoding import *
 
 from utilities.utils import print_
+from utilities.metrics import *
+
 # from utilities.metrics import compute_mask_IOU
 
 from pytorch_metric_learning import distances, losses, miners, reducers
@@ -68,8 +70,12 @@ def evaluate(
 
         total_loss += float(loss.item())
 
-        accuracy = (torch.argmax(y_pred) == word_label).sum()
-        total_acc += accuracy.item()
+        # accuracy = (torch.argmax(y_pred) == word_label).sum()
+
+        accuracy, accuracy_five, accuracy_ten = top_5(y_pred.detach().cpu().numpy(), word_label.detach().cpu().numpy())
+        total_acc += accuracy
+
+
         
         num_examples += batch_size
 
@@ -81,6 +87,7 @@ def evaluate(
 
             curr_acc = total_acc / num_examples
 
+            print(f'Accuracy_top1: {accuracy:.4f}, Accuracy_top5: {accuracy_five:.4f}, Accuracy_top10: {accuracy_ten:.4f}')
             print_(
                 f"{timestamp} Validation: iter [{step:3d}/{data_len}] curr_acc {curr_acc:.4f} memory_use {memoryUse:.3f}MB elapsed {elapsed_time:.2f}"
             )

@@ -1,4 +1,5 @@
 import os
+import random
 import numpy as np
 
 import torch
@@ -79,7 +80,12 @@ class ROIBaseline(nn.Module):
         
     def forward(self, x):
         
+        # x = F.normalize(x, p=2, dim=1)
+
         outputs = []
+
+        if random.random() < 0.05:
+            import pdb; pdb.set_trace()
         
         index = 0
         for i in range(self.num_rois):
