@@ -7,7 +7,7 @@ import scipy.io as sio
 def ROI_loader(subject, fil):
 
     # data_path = str(os.path.dirname(os.path.abspath(__file__))) + '/data/subjects'
-    data_path = '/ssd_scratch/cvit/kanishk/brain2word_data/subjects'
+    data_path = '/ssd_scratch/cvit/kanishk/brain2word_data/subjects/'
     all_data = sio.loadmat(data_path + subject + '/' + fil)      
     ROI = all_data['meta']
     Gordon_areas = ROI[0][0][11][0][14]   
@@ -21,7 +21,7 @@ def ROI_loader(subject, fil):
 def coltocoord_ROI_ordering(subject, fil):
     
     # data_path = str(os.path.dirname(os.path.abspath(__file__))) + '/data/subjects'
-    data_path = '/ssd_scratch/cvit/kanishk/brain2word_data/subjects'
+    data_path = '/ssd_scratch/cvit/kanishk/brain2word_data/subjects/'
     all_data = sio.loadmat(data_path + subject + '/' + fil)      
     ROI = all_data['meta']
     coord = ROI[0][0][5]
