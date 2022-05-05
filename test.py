@@ -35,6 +35,13 @@ print(f'glove_fine: {glove_fine.shape}')
 print(f'glove_fine_test: {glove_fine_test.shape}')
 # np.save(data_root + 'glove_fine_test.npy', glove_fine_test)
 
+class_fine_test =np.eye(180)
+class_fine = np.reshape(np.tile(class_fine_test,(42,1)),(7560,180))
+class_fine_test = np.reshape(np.tile(class_fine_test,(3,1)),(540,180)) 
+class_train = np.zeros((4530,180))
+
+print(class_fine_test.shape, class_train.shape)
+
 
 # data_train: (3903, 65730)
 # data_test: (540, 65730)
