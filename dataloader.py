@@ -1,11 +1,13 @@
 import os
+from glob import glob
 import numpy as np
 import scipy.io as sio
 
 
 def ROI_loader(subject, fil):
 
-    data_path = str(os.path.dirname(os.path.abspath(__file__))) + '/data/subjects'
+    # data_path = str(os.path.dirname(os.path.abspath(__file__))) + '/data/subjects'
+    data_path = '/ssd_scratch/cvit/kanishk/brain2word_data/subjects'
     all_data = sio.loadmat(data_path + subject + '/' + fil)      
     ROI = all_data['meta']
     Gordon_areas = ROI[0][0][11][0][14]   
@@ -18,7 +20,8 @@ def ROI_loader(subject, fil):
 
 def coltocoord_ROI_ordering(subject, fil):
     
-    data_path = str(os.path.dirname(os.path.abspath(__file__))) + '/data/subjects'
+    # data_path = str(os.path.dirname(os.path.abspath(__file__))) + '/data/subjects'
+    data_path = '/ssd_scratch/cvit/kanishk/brain2word_data/subjects'
     all_data = sio.loadmat(data_path + subject + '/' + fil)      
     ROI = all_data['meta']
     coord = ROI[0][0][5]
@@ -107,8 +110,10 @@ def class_sizer(subject):
 
 def dataloader_sentence_word_split_new_matching_all_subjects(subject):
 
+    # subject_path = "/ssd_scratch/cvit/kanishk/brain2word_data"
 
-    data_path = str(os.path.dirname(os.path.abspath(__file__))) + '/data/subjects/'
+    # data_path = str(os.path.dirname(os.path.abspath(__file__))) + '/data/subjects/'
+    data_path = '/ssd_scratch/cvit/kanishk/brain2word_data/subjects/'
     vector_path_180 = str(os.path.dirname(os.path.abspath(__file__))) + '/data/glove_data/180_concepts_real.mat'
     vector_path_243 = str(os.path.dirname(os.path.abspath(__file__))) + '/data/glove_data/243_sentences_real.mat'
     vector_path_384 =str(os.path.dirname(os.path.abspath(__file__))) +  '/data/glove_data/384_sentences_real.mat'
