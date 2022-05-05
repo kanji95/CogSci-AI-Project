@@ -34,6 +34,7 @@ def train(
     total_acc = 0
     
     cross_entropy_loss = nn.CrossEntropyLoss()
+    smoothl1_loss = nn.SmoothL1Loss()
     cosine_embedding_loss = nn.CosineEmbeddingLoss(margin=0.1)
     
     distance = distances.CosineSimilarity()
@@ -56,13 +57,16 @@ def train(
             fmri_scan, glove_emb, word_label = batch
             
             batch_size = fmri_scan.shape[0]
+            target = torch.ones(batch_size).cuda(non_blocking=True)
             
         start_time = time()
-    
-        reg_out, y_pred = brain_model(fmri_scan)
-        
-        indices_tuple = miner_func(reg_out, word_label)
-        loss = contrastive_loss(reg_out, word_label, indices_tuple) + cross_entropy_loss(y_pred, word_label) + cosine_embedding_loss(reg_out, glove_emb)
+        # reg_out, y_pred = brain_model(fmri_scan)
+        # import pdb; pdb.set_trace()
+        y_pred = brain_model(fmri_scan)
+
+        # indices_tuple = miner_func(reg_out, word_label)
+        # loss = contrastive_loss(reg_out, word_label, indices_tuple) + cross_entropy_loss(y_pred, word_label) + cosine_embedding_loss(reg_out, glove_emb, target)
+        loss = cross_entropy_loss(y_pred, word_label) # + smoothl1_loss(reg_out, glove_emb)
         
         loss.backward()
         if iterId % 500 == 0 and args.grad_check:
@@ -73,7 +77,8 @@ def train(
         end_time = time()
         elapsed_time = end_time - start_time
         
-        accuracy = (torch.argmax(y_pred) == word_label).sum()
+        pred_label = torch.argmax(y_pred, dim=-1)
+        accuracy = (pred_label == word_label).sum()
         
         total_acc = accuracy.item()
         total_loss += float(loss.item())
@@ -82,6 +87,7 @@ def train(
         
         if iterId % 200 == 0 and step != 0:
             gc.collect()
+            # print(pred_label, word_label)
             memoryUse = py.memory_info()[0] / 2.0 ** 20
             timestamp = datetime.now().strftime("%Y|%m|%d-%H:%M")
             curr_loss = total_loss / (step + 1)

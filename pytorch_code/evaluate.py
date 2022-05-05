@@ -54,16 +54,18 @@ def evaluate(
         fmri_scan, glove_emb, word_label = batch
 
         batch_size = fmri_scan.shape[0]
+        target = torch.ones(batch_size).cuda(non_blocking=True)
 
         start_time = time()
 
-        reg_out, y_pred = brain_model(fmri_scan)
+        y_pred = brain_model(fmri_scan)
         end_time = time()
         elapsed_time = end_time - start_time
         
-        indices_tuple = miner_func(reg_out, word_label)
-        loss = contrastive_loss(reg_out, word_label, indices_tuple) + cross_entropy_loss(y_pred, word_label) + cosine_embedding_loss(reg_out, glove_emb)
-        
+        # indices_tuple = miner_func(reg_out, word_label)
+        # loss = contrastive_loss(reg_out, word_label, indices_tuple) + cross_entropy_loss(y_pred, word_label) + cosine_embedding_loss(reg_out, glove_emb, target)
+        loss = cross_entropy_loss(y_pred, word_label)
+
         total_loss += float(loss.item())
 
         accuracy = (torch.argmax(y_pred) == word_label).sum()

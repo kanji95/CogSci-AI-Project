@@ -14,6 +14,9 @@ class FmriDataset(Dataset):
         self.data_fine = np.load(f'{data_root}/data_fine_{split}.npy')
         self.glove_fine = np.load(f'{data_root}/glove_fine_{split}.npy')
         self.class_fine = np.load(f'{data_root}/class_fine_{split}.npy')
+
+        # print(self.data_fine)
+        print(self.class_fine)
     
     def __len__(self):
         return len(self.data_fine)

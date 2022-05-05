@@ -3,6 +3,7 @@ import numpy as np
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from .transformers import TransformerEncoder, TransformerEncoderLayer
 
@@ -11,31 +12,40 @@ class Baseline(nn.Module):
         super().__init__()
         
         self.encoder = nn.Sequential(
-            nn.Linear(65730, 512),
-            nn.BatchNorm1d(512),
+            nn.Linear(65730, 2000),
             nn.LeakyReLU(0.3),
+            nn.BatchNorm1d(2000),
             nn.Dropout(0.4),
             
-            nn.Linear(512, 200),
-            nn.BatchNorm1d(200),
+            nn.Linear(2000, 300),
             nn.LeakyReLU(0.3),
-            nn.Dropout(0.4),
+            nn.BatchNorm1d(300),
+            nn.Dropout(0.4)
         )
         self.decoder = None
         
-        self.regressor = nn.Linear(200, 300)
+        # self.regressor = nn.Sequential(
+        #     nn.Linear(200, 300),
+        #     nn.BatchNorm1d(300),                                                                                                                                                                                                                                               
+        #     nn.LeakyReLU(0.3),
+        #     nn.Dropout(0.4),
+        # )
         self.classifier = nn.Linear(300, 180)
         
+        self.relu = nn.ReLU()
         self.softmax = nn.Softmax(dim=-1)
         
     def forward(self, x):
+
+        # x = F.normalize(x, p=2, dim=1)
         latent = self.encoder(x)
         
         # recon_x = self.decoder(latent)
-        reg_out = self.regressor(latent)
-        y_pred = self.softmax(self.classifier(reg_out))
+        # reg_out = self.relu(self.regressor(latent))
+        # reg_out = self.regressor(latent)
+        y_pred = self.softmax(self.classifier(latent))
         
-        return reg_out, y_pred
+        return y_pred
 
 class ROIBaseline(nn.Module):
     def __init__(self, num_rois=333):
@@ -43,8 +53,8 @@ class ROIBaseline(nn.Module):
         
         self.num_rois = num_rois
         
-        self.sizes = np.load(str(os.path.dirname(os.path.abspath(__file__))) + '../data/look_ups/sizes.npy')
-        self.reduced = np.load(str(os.path.dirname(os.path.abspath(__file__))) + '../data/look_ups/reduced.npy')
+        self.sizes = np.load('/home/kanishk/cogsci_project/pytorch_code/data/look_ups/sizes.npy')
+        self.reduced = np.load('/home/kanishk/cogsci_project/pytorch_code/data/look_ups/reduced_sizes.npy')
         
         linear_layers = []
         concat_dim = 0
@@ -74,15 +84,16 @@ class ROIBaseline(nn.Module):
         index = 0
         for i in range(self.num_rois):
             new_index = index + self.sizes[i]
-            outputs.append(self.encoder[i](x[index:new_index]))
+            outputs.append(self.encoder[i](x[:, index:new_index]))
             index = new_index
         
-        concat_out = torch.cat(outputs)     
+        concat_out = torch.cat(outputs, dim=-1)     
         
         reg_out = self.regressor(self.dropout(concat_out))
         y_pred = self.softmax(self.classifier(reg_out))
         
-        return concat_out, reg_out, y_pred
+        return y_pred
+        # return concat_out, reg_out, y_pred
         
     
 class Autoencoder(nn.Module):

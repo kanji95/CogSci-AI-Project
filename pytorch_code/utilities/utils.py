@@ -59,8 +59,8 @@ def grad_check(named_parameters, experiment):
         # import pdb; pdb.set_trace()
         # print(n)
         if p.requires_grad and "bias" not in n:
-            max_grad = p.grad.abs().max()
-            mean_grad = p.grad.abs().mean()
+            max_grad = p.grad.abs().max().detach().cpu()
+            mean_grad = p.grad.abs().mean().detach().cpu()
             layers.append(n)
             max_grads.append(max_grad)
             mean_grads.append(mean_grad)

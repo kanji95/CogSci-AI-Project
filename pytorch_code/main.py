@@ -43,12 +43,11 @@ def get_args_parser():
     parser = argparse.ArgumentParser("Cogsci Project", add_help=False)
 
     # HYPER Params
-    parser.add_argument("--lr", default=3e-4, type=float)
+    parser.add_argument("--lr", default=1e-3, type=float)
     parser.add_argument("--batch_size", default=16, type=int)
     parser.add_argument("--weight_decay", default=1e-3, type=float)
-    parser.add_argument("--epochs", default=10, type=int)
+    parser.add_argument("--epochs", default=100, type=int)
     parser.add_argument("--gamma", default=0.7, type=float)
-    parser.add_argument("--optimizer", default="AdamW", type=str)
     parser.add_argument("--num_workers", type=int, default=4, help="number of workers")
     parser.add_argument("--grad_check", default=False, action="store_true")
 
@@ -88,7 +87,8 @@ def main(args):
 
     ####################### Model Initialization #######################
 
-    brain_model = Baseline()
+    # brain_model = Baseline()
+    brain_model = ROIBaseline()
 
     wandb.watch(brain_model, log="all")
 
@@ -106,9 +106,9 @@ def main(args):
 
     brain_model.to(device)
 
-    params = list([p for p in brain_model.parameters() if p.requires_grad])
+    params = list([p for p in brain_model.parameters()])
 
-    optimizer = AdamW(params, lr=args.lr, weight_decay=args.weight_decay)
+    optimizer = Adam(params, lr=args.lr)
 
     save_path = args.model_dir
     if not os.path.exists(save_path):
@@ -185,7 +185,7 @@ def main(args):
 
         wandb.log({"val_loss": val_loss, "val_IOU": val_acc})
 
-        lr_scheduler.step(val_loss)
+        # lr_scheduler.step(val_loss)
 
         if val_acc > best_acc:
             best_acc = val_acc
@@ -205,7 +205,7 @@ def main(args):
             epochs_without_improvement += 1
             print_(f"Epochs without Improvement: {epochs_without_improvement}")
 
-            if epochs_without_improvement == 6:
+            if epochs_without_improvement == 20:
                 print_(
                     f"{epochs_without_improvement} epochs without improvement, Stopping Training!"
                 )
