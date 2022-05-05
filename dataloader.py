@@ -121,6 +121,8 @@ def dataloader_sentence_word_split_new_matching_all_subjects(subject):
     vector_180 = sio.loadmat(vector_path_180)['data']
     vector_243 = sio.loadmat(vector_path_243)['data']
     vector_384 = sio.loadmat(vector_path_384)['data']
+    
+    print(vector_180.shape, vector_243.shape, vector_384.shape)
 
     subjects = ['P01','M02','M03','M04','M05','M06','M07', 'M08', 'M09','M15','M10', 'M13','M14','M16', 'M17']  #,'M10', 'M13','M14','M16','M17'
     no_sent = ['M05','M06','M10', 'M13','M16', 'M17']
@@ -164,6 +166,9 @@ def dataloader_sentence_word_split_new_matching_all_subjects(subject):
     tot_fine = 0
     tot_test= 0
     tot_fine_test = 0
+    
+    if numb == 0:
+        return data_train, data_fine_test, glove_train, glove_fine_test, data_fine, data_fine_test, glove_fine, glove_fine_test
 
     for sub in subjects:
 

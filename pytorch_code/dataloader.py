@@ -7,8 +7,9 @@ from torch.utils.data import Dataset
 
 
 class CustomDataset(Dataset):
-    def __init__(self):
-        self.data = []
+    def __init__(self, data_path, split):
+        
+        self.data = np.load(data_path)
     
     def __len__(self):
         return len(self.data)
