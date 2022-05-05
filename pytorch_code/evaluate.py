@@ -35,6 +35,7 @@ def evaluate(
     total_acc = 0
     total_acc5 = 0
     total_acc10 = 0
+    total_pacc = 0
     
     cross_entropy_loss = nn.CrossEntropyLoss()
     bce_loss = nn.BCELoss()
@@ -69,23 +70,25 @@ def evaluate(
 
         start_time = time()
 
-        y_pred = brain_model(fmri_scan)
+        reg_out, y_pred = brain_model(fmri_scan)
         end_time = time()
         elapsed_time = end_time - start_time
         
-        # indices_tuple = miner_func(reg_out, word_label)
-        # loss = contrastive_loss(reg_out, word_label, indices_tuple) + cross_entropy_loss(y_pred, word_label) + cosine_embedding_loss(reg_out, glove_emb, target)
-        # loss = cross_entropy_loss(y_pred, word_label)
-        loss = bce_loss(y_pred, word_label)
+        indices_tuple = miner_func(reg_out, word_label)
+        loss = contrastive_loss(reg_out, word_label, indices_tuple) + cosine_embedding_loss(reg_out, glove_emb, target)
+        # loss = bce_loss(y_pred, word_label)
 
         total_loss += float(loss.item())
 
         # accuracy = (torch.argmax(y_pred) == word_label).sum()
 
         accuracy, accuracy_five, accuracy_ten = top_5(y_pred.detach().cpu().numpy(), word_label.detach().cpu().numpy())
+        pair_accuracy = evaluation(reg_out, glove_emb)
+        
         total_acc += accuracy
         total_acc5 += accuracy_five
         total_acc10 += accuracy_ten
+        total_pacc += pair_accuracy
         
         num_examples += batch_size
 
@@ -107,10 +110,12 @@ def evaluate(
     val_acc5 = total_acc5 / data_len
     val_acc10 = total_acc10 / data_len
     val_loss = total_loss / data_len
+    
+    val_pacc = total_pacc / data_len
 
     timestamp = datetime.now().strftime("%Y|%m|%d-%H:%M")
     print_(
-            f"{timestamp} Validation: EpochId: {epochId:2d} val_acc {val_acc:.4f} val_acc5 {val_acc5:.4f} val_acc10 {val_acc10:.4f}"
+            f"{timestamp} Validation: EpochId: {epochId:2d} val_acc {val_acc:.4f} val_acc5 {val_acc5:.4f} val_acc10 {val_acc10:.4f} val_pacc {val_pacc:.4f}"
     )
     print_("============================================================================================================================================\n")
     

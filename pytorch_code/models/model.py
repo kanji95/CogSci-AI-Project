@@ -19,9 +19,9 @@ class Baseline(nn.Module):
             nn.BatchNorm1d(2000),
             nn.Dropout(0.4),
             nn.Linear(2000, 300),
-            nn.LeakyReLU(0.3),
-            nn.BatchNorm1d(300),
-            nn.Dropout(0.4),
+            # nn.LeakyReLU(0.3),
+            # nn.BatchNorm1d(300),
+            # nn.Dropout(0.4),
         )
         self.decoder = None
 
@@ -46,7 +46,7 @@ class Baseline(nn.Module):
         # reg_out = self.regressor(latent)
         y_pred = self.softmax(self.classifier(latent))
 
-        return y_pred
+        return latent, y_pred
 
 
 class ROIBaseline(nn.Module):
@@ -78,7 +78,8 @@ class ROIBaseline(nn.Module):
 
         self.regressor = nn.Sequential(
             nn.Linear(concat_dim, 1024), nn.BatchNorm1d(1024), nn.LeakyReLU(0.3),
-            nn.Linear(1024, 300), nn.BatchNorm1d(300), nn.LeakyReLU(0.3)
+            nn.Linear(1024, 300), 
+            # nn.BatchNorm1d(300), nn.LeakyReLU(0.3)
         )
         self.classifier = nn.Linear(300, 180)
 
@@ -107,7 +108,7 @@ class ROIBaseline(nn.Module):
 
         # print(concat_out.min(), concat_out.max(), reg_out.min(), reg_out.max(), y_pred.min(), y_pred.max())
 
-        return y_pred
+        return reg_out, y_pred
         # return concat_out, reg_out, y_pred
 
 

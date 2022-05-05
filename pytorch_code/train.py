@@ -33,6 +33,7 @@ def train(
 
     total_loss = 0
     total_acc = 0
+    total_pacc = 0
     
     cross_entropy_loss = nn.CrossEntropyLoss()
     bce_loss = nn.BCELoss(reduction='sum')
@@ -66,14 +67,11 @@ def train(
             target = torch.ones(batch_size).cuda(non_blocking=True)
             
         start_time = time()
-        # reg_out, y_pred = brain_model(fmri_scan)
-        # import pdb; pdb.set_trace()
-        y_pred = brain_model(fmri_scan)
+        reg_out, y_pred = brain_model(fmri_scan)
 
-        # indices_tuple = miner_func(reg_out, word_label)
-        # loss = contrastive_loss(reg_out, word_label, indices_tuple) + cross_entropy_loss(y_pred, word_label) + cosine_embedding_loss(reg_out, glove_emb, target)
-        # loss = cross_entropy_loss(y_pred, word_label) # + smoothl1_loss(reg_out, glove_emb)
-        loss = bce_loss(y_pred, word_label)
+        indices_tuple = miner_func(reg_out, word_label)
+        loss = contrastive_loss(reg_out, word_label, indices_tuple) + cosine_embedding_loss(reg_out, glove_emb, target)
+        # loss = bce_loss(y_pred, word_label)
 
         loss.backward()
         if iterId % 500 == 0 and args.grad_check:
@@ -85,10 +83,12 @@ def train(
         elapsed_time = end_time - start_time
         
         accuracy, accuracy_five, accuracy_ten = top_5(y_pred.detach().cpu().numpy(), word_label.detach().cpu().numpy())
+        pair_accuracy = evaluation(reg_out, glove_emb)
 
         # print('Accuracy_top1: ' + str(accuracy) + ' Accuracy_top5: ' + str(accuracy_five) + 'Accuracy_top10: ' + str(accuracy_ten))
         
-        total_acc = accuracy
+        total_acc += accuracy
+        total_pacc += pair_accuracy
         total_loss += float(loss.item())
         
         num_examples += batch_size
@@ -111,11 +111,12 @@ def train(
     timestamp = datetime.now().strftime("%Y|%m|%d-%H:%M")
 
     train_loss = total_loss / data_len
-    train_acc = total_acc / num_examples
-
+    train_acc = total_acc / data_len
+    train_pacc = total_pacc / data_len
+    
     experiment.log({"loss": train_loss, "acc": train_acc})
 
     print_(
-        f"{timestamp} FINISHED Epoch:{epochId:2d} loss {train_loss:.4f} acc {train_acc:.4f} elapsed {epoch_time:.2f}"
+        f"{timestamp} FINISHED Epoch:{epochId:2d} loss {train_loss:.4f} acc {train_acc:.4f} pacc {train_pacc:.4f} elapsed {epoch_time:.2f}"
     )
     print_("============================================================================================================================================\n")
