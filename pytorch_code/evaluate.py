@@ -33,6 +33,7 @@ def evaluate(
 
     total_loss = 0
     total_acc = 0
+    total_acc5 = 0
     
     cross_entropy_loss = nn.CrossEntropyLoss()
     bce_loss = nn.BCELoss()
@@ -82,8 +83,7 @@ def evaluate(
 
         accuracy, accuracy_five, accuracy_ten = top_5(y_pred.detach().cpu().numpy(), word_label.detach().cpu().numpy())
         total_acc += accuracy
-
-
+        total_acc5 += accuracy_five
         
         num_examples += batch_size
 
@@ -94,18 +94,20 @@ def evaluate(
             timestamp = datetime.now().strftime("%Y|%m|%d-%H:%M")
 
             curr_acc = total_acc / (step + 1)
+            curr_acc5 = total_acc5 / (step + 1)
 
             print(f'Accuracy_top1: {accuracy:.4f}, Accuracy_top5: {accuracy_five:.4f}, Accuracy_top10: {accuracy_ten:.4f}')
             print_(
-                f"{timestamp} Validation: iter [{step:3d}/{data_len}] curr_acc {curr_acc:.4f} memory_use {memoryUse:.3f}MB elapsed {elapsed_time:.2f}"
+                f"{timestamp} Validation: iter [{step:3d}/{data_len}] curr_acc {curr_acc:.4f} curr_acc5 {curr_acc5:.4f} memory_use {memoryUse:.3f}MB elapsed {elapsed_time:.2f}"
             )
             
     val_acc = total_acc / data_len
+    val_acc5 = total_acc5 / data_len
     val_loss = total_loss / data_len
 
     timestamp = datetime.now().strftime("%Y|%m|%d-%H:%M")
     print_(
-        f"{timestamp} Validation: EpochId: {epochId:2d} val_acc {val_acc:.4f}"
+        f"{timestamp} Validation: EpochId: {epochId:2d} val_acc {val_acc:.4f} val_acc5 {val_acc5:.4f}"
     )
     print_("============================================================================================================================================\n")
     
