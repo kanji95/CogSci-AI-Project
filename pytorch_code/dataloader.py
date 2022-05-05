@@ -22,4 +22,4 @@ class FmriDataset(Dataset):
         fmri_scan = self.data_fine[idx]
         glove_emb = self.glove_fine[idx]
         word_label = self.class_fine[idx]
-        return fmri_scan, glove_emb, word_label
+        return torch.tensor(fmri_scan).float(), glove_emb, word_label

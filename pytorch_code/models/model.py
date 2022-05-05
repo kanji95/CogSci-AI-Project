@@ -11,7 +11,7 @@ class Baseline(nn.Module):
         super().__init__()
         
         self.encoder = nn.Sequential(
-            nn.Linear(65370, 512),
+            nn.Linear(65730, 512),
             nn.BatchNorm1d(512),
             nn.LeakyReLU(0.3),
             nn.Dropout(0.4),

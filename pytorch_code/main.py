@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader, RandomSampler
 from torch.optim import *
 from torchvision.models._utils import IntermediateLayerGetter
 
-from .dataloader import FmriDataset
+from dataloader import FmriDataset
 
 from evaluate import evaluate
 # from losses import Loss
@@ -56,27 +56,6 @@ def get_args_parser():
     parser.add_argument("--dcrf", default=False, action="store_true")
 
     # MODEL Params
-    parser.add_argument(
-        "--image_encoder",
-        type=str,
-        default="deeplabv3_plus",
-        choices=[
-            "vgg16",
-            "vgg19",
-            "resnet50",
-            "resnet101",
-            "deeplabv2",
-            "deeplabv3_resnet101",
-            "deeplabv3_plus",
-            "dino",
-        ],
-    )
-    parser.add_argument("--num_layers", type=int, default=1)
-    parser.add_argument("--num_encoder_layers", type=int, default=2)
-    parser.add_argument("--sfm_dim", default=256, type=int)
-    parser.add_argument("--feature_dim", default=14, type=int)
-    parser.add_argument("--dropout", default=0.3, type=float)
-
     parser.add_argument("--model_dir", type=str, default="./saved_model")
     parser.add_argument("--save", default=False, action="store_true")
 
@@ -84,34 +63,11 @@ def get_args_parser():
     parser.add_argument("--model_filename", default="model_unc.pth", type=str)
 
     # LOSS Params
-    parser.add_argument("--loss", default="bce", type=str)
-
     parser.add_argument("--run_name", default="", type=str)
 
     parser.add_argument(
         "--dataroot", type=str, default="<data_path>"
     )
-    parser.add_argument(
-        "--glove_path", default="<glove_path>", type=str
-    )
-    parser.add_argument(
-        "--task",
-        default="unc",
-        type=str,
-        choices=[
-            "unc",
-            "unc+",
-            "gref",
-            "referit",
-        ],
-    )
-    parser.add_argument("--cache_type", type=str, default="full")
-    parser.add_argument("--image_dim", type=int, default=448)
-    parser.add_argument("--mask_dim", type=int, default=56)
-    parser.add_argument("--channel_dim", type=int, default=512)
-    parser.add_argument("--phrase_len", type=int, default=20)
-
-    parser.add_argument("--threshold", type=float, default=0.40)
 
     return parser
 
@@ -122,7 +78,6 @@ def main(args):
     if args.run_name == "":
         print_("No Name Provided, Using Default Run Name")
         args.run_name = f"{experiment.id}"
-    args.run_name = f'{args.task}_{args.image_encoder}_{args.run_name}_tl_{args.num_encoder_layers}_td_{args.sfm_dim}_id_{args.image_dim}_md_{args.mask_dim}_sl_{args.phrase_len}_' + args.run_name
     print_(f"METHOD USED FOR CURRENT RUN {args.run_name}")
     experiment.name = args.run_name
     wandb.run.save()
@@ -155,13 +110,13 @@ def main(args):
 
     optimizer = AdamW(params, lr=args.lr, weight_decay=args.weight_decay)
 
-    save_path = os.path.join(args.model_dir, args.task)
+    save_path = args.model_dir
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
     model_filename = os.path.join(
         save_path,
-        f'{args.image_encoder}_{args.task}_{datetime.now().strftime("%d_%b_%H-%M")}.pth',
+        f'baseline_{datetime.now().strftime("%d_%b_%H-%M")}.pth',
     )
 
     ######################## Dataset Loading ########################
@@ -260,7 +215,7 @@ def main(args):
         print_(f"Current Run Name {args.run_name}")
         best_acc_filename = os.path.join(
             save_path,
-            f"{args.image_encoder}_{args.task}_tl_{args.num_encoder_layers}_td_{args.sfm_dim}_fd_{args.feature_dim}_id_{args.image_dim}_md_{args.mask_dim}_sl_{args.phrase_len}_{best_acc:.5f}.pth",
+            f"baseline_{best_acc:.5f}.pth",
         )
         os.rename(model_filename, best_acc_filename)
 

@@ -45,7 +45,7 @@ def train(
 
     epoch_start = time()
 
-    print_("\n=========================================================== Training Grounding Network ===================================================")
+    print_("\n=========================================================== Training Network ===================================================")
     
     num_examples = 0
     for step, batch in enumerate(train_loader):
@@ -60,7 +60,7 @@ def train(
     
         reg_out, y_pred = brain_model(fmri_scan)
         
-        indices_tuple = miner_func(reg_out, y_pred)
+        indices_tuple = miner_func(reg_out, word_label)
         loss = contrastive_loss(reg_out, glove_emb, indices_tuple) + cross_entropy_loss(y_pred, word_label)
         
         loss.backward()
