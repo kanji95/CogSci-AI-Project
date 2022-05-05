@@ -9,6 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from utilities.utils import print_, grad_check
+from utilities.metrics import *
 
 from pytorch_metric_learning import distances, losses, miners, reducers
 # from utilities.metrics import compute_mask_IOU
@@ -77,8 +78,9 @@ def train(
         end_time = time()
         elapsed_time = end_time - start_time
         
-        pred_label = torch.argmax(y_pred, dim=-1)
-        accuracy = (pred_label == word_label).sum()
+        accuracy, accuracy_five, accuracy_ten = top_5(y_pred, word_label)
+
+        print('Accuracy_top1: ' + str(accuracy) + ' Accuracy_top5: ' + str(accuracy_five) + 'Accuracy_top10: ' + str(accuracy_ten))
         
         total_acc = accuracy.item()
         total_loss += float(loss.item())
