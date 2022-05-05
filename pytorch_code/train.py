@@ -35,6 +35,7 @@ def train(
     total_acc = 0
     
     cross_entropy_loss = nn.CrossEntropyLoss()
+    bce_loss = nn.BCELoss(reduction='sum')
     smoothl1_loss = nn.SmoothL1Loss()
     cosine_embedding_loss = nn.CosineEmbeddingLoss(margin=0.1)
     
@@ -56,8 +57,12 @@ def train(
         with torch.no_grad():
             batch = (x.cuda(non_blocking=True) for x in batch)
             fmri_scan, glove_emb, word_label = batch
-            
+
             batch_size = fmri_scan.shape[0]
+            one_hot = torch.zeros((batch_size, 180)).cuda(non_blocking=True)
+            one_hot[torch.arange(batch_size), word_label] = 1
+            word_label = one_hot
+
             target = torch.ones(batch_size).cuda(non_blocking=True)
             
         start_time = time()
@@ -67,8 +72,9 @@ def train(
 
         # indices_tuple = miner_func(reg_out, word_label)
         # loss = contrastive_loss(reg_out, word_label, indices_tuple) + cross_entropy_loss(y_pred, word_label) + cosine_embedding_loss(reg_out, glove_emb, target)
-        loss = cross_entropy_loss(y_pred, word_label) # + smoothl1_loss(reg_out, glove_emb)
-        
+        # loss = cross_entropy_loss(y_pred, word_label) # + smoothl1_loss(reg_out, glove_emb)
+        loss = bce_loss(y_pred, word_label)
+
         loss.backward()
         if iterId % 500 == 0 and args.grad_check:
             grad_check(brain_model.named_parameters(), experiment)

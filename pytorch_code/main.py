@@ -108,7 +108,7 @@ def main(args):
 
     params = list([p for p in brain_model.parameters()])
 
-    optimizer = Adam(params, lr=args.lr)
+    optimizer = AdamW(params, lr=args.lr)
 
     save_path = args.model_dir
     if not os.path.exists(save_path):
@@ -185,7 +185,7 @@ def main(args):
 
         wandb.log({"val_loss": val_loss, "val_IOU": val_acc})
 
-        # lr_scheduler.step(val_loss)
+        lr_scheduler.step(val_loss)
 
         if val_acc > best_acc:
             best_acc = val_acc
@@ -205,7 +205,7 @@ def main(args):
             epochs_without_improvement += 1
             print_(f"Epochs without Improvement: {epochs_without_improvement}")
 
-            if epochs_without_improvement == 20:
+            if epochs_without_improvement == 100:
                 print_(
                     f"{epochs_without_improvement} epochs without improvement, Stopping Training!"
                 )

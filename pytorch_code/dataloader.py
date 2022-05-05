@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from sklearn.preprocessing import Normalizer
+from sklearn.preprocessing import Normalizer, MinMaxScaler
 
 
 class FmriDataset(Dataset):
@@ -28,7 +28,7 @@ class FmriDataset(Dataset):
         glove_emb = self.glove_fine[idx]
         word_label = self.class_fine[idx]
         
-        transformer = Normalizer().fit(fmri_scan)
-        fmri_scan = transformer.transform(fmri_scan)
+        # transformer = Normalizer().fit(fmri_scan.reshape(1, -1))
+        # fmri_scan = transformer.transform(fmri_scan.reshape(1, -1))[0]
         
         return torch.tensor(fmri_scan).float(), glove_emb, word_label

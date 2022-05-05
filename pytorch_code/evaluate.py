@@ -35,6 +35,8 @@ def evaluate(
     total_acc = 0
     
     cross_entropy_loss = nn.CrossEntropyLoss()
+    bce_loss = nn.BCELoss()
+
     cosine_embedding_loss = nn.CosineEmbeddingLoss(margin=0.1)
     
     distance = distances.CosineSimilarity()
@@ -56,6 +58,11 @@ def evaluate(
         fmri_scan, glove_emb, word_label = batch
 
         batch_size = fmri_scan.shape[0]
+
+        one_hot = torch.zeros((batch_size, 180)).cuda(non_blocking=True)
+        one_hot[torch.arange(batch_size), word_label] = 1
+        word_label = one_hot
+
         target = torch.ones(batch_size).cuda(non_blocking=True)
 
         start_time = time()
@@ -66,7 +73,8 @@ def evaluate(
         
         # indices_tuple = miner_func(reg_out, word_label)
         # loss = contrastive_loss(reg_out, word_label, indices_tuple) + cross_entropy_loss(y_pred, word_label) + cosine_embedding_loss(reg_out, glove_emb, target)
-        loss = cross_entropy_loss(y_pred, word_label)
+        # loss = cross_entropy_loss(y_pred, word_label)
+        loss = bce_loss(y_pred, word_label)
 
         total_loss += float(loss.item())
 
@@ -85,14 +93,14 @@ def evaluate(
 
             timestamp = datetime.now().strftime("%Y|%m|%d-%H:%M")
 
-            curr_acc = total_acc / num_examples
+            curr_acc = total_acc / (step + 1)
 
             print(f'Accuracy_top1: {accuracy:.4f}, Accuracy_top5: {accuracy_five:.4f}, Accuracy_top10: {accuracy_ten:.4f}')
             print_(
                 f"{timestamp} Validation: iter [{step:3d}/{data_len}] curr_acc {curr_acc:.4f} memory_use {memoryUse:.3f}MB elapsed {elapsed_time:.2f}"
             )
             
-    val_acc = total_acc / num_examples
+    val_acc = total_acc / data_len
     val_loss = total_loss / data_len
 
     timestamp = datetime.now().strftime("%Y|%m|%d-%H:%M")

@@ -76,16 +76,16 @@ class ROIBaseline(nn.Module):
         
         self.dropout = nn.Dropout(0.4)
         
+        self.relu = nn.ReLU()
         self.softmax = nn.Softmax(dim=-1)
         
     def forward(self, x):
         
-        # x = F.normalize(x, p=2, dim=1)
 
         outputs = []
 
-        if random.random() < 0.05:
-            import pdb; pdb.set_trace()
+        # if random.random() < 0.05:
+        #     import pdb; pdb.set_trace()
         
         index = 0
         for i in range(self.num_rois):
@@ -97,6 +97,8 @@ class ROIBaseline(nn.Module):
         
         reg_out = self.regressor(self.dropout(concat_out))
         y_pred = self.softmax(self.classifier(reg_out))
+
+        # print(concat_out.min(), concat_out.max(), reg_out.min(), reg_out.max(), y_pred.min(), y_pred.max())
         
         return y_pred
         # return concat_out, reg_out, y_pred

@@ -6,9 +6,9 @@ def top_5(pred, real):
     counter_ten= 0.0
     # import pdb; pdb.set_trace()
 
-    gt = np.zeros(pred.shape)
-    gt[np.arange(pred.shape[0]), real] = 1
-    real = gt
+    # gt = np.zeros(pred.shape)
+    # gt[np.arange(pred.shape[0]), real] = 1
+    # real = gt
 
     for i in range(pred.shape[0]):
         if np.argmax(pred[i,:])==np.argmax(real[i,:]):
