@@ -1,4 +1,5 @@
 import os
+from sklearn.preprocessing import LabelEncoder
 from dataloader import *
 
 subject = 'M15'
@@ -7,7 +8,19 @@ data_root = "/ssd_scratch/cvit/kanishk/simplified_data/"
 
 os.makedirs(data_root, exist_ok=True)
 
+labels = np.arange(180)
+labels_train = np.reshape(np.tile(labels,(42,1)),(7560))  
+labels = np.reshape(np.tile(labels,(3,1)),(540))
+
+class_fine_test =np.eye(180)
+class_fine_test = np.reshape(np.tile(class_fine_test,(3,1)),(540,180))
+
 data_train, data_test, glove_train, glove_test, data_fine, data_fine_test, glove_fine, glove_fine_test = dataloader_sentence_word_split_new_matching_all_subjects(subject)
+
+le_y = LabelEncoder()
+
+class_fine_test_two = le_y.fit_transform(labels)
+class_fine =le_y.transform(labels_train)
 
 # print(data_train.shape, data_test.shape)
 
@@ -35,12 +48,7 @@ print(f'glove_fine: {glove_fine.shape}')
 print(f'glove_fine_test: {glove_fine_test.shape}')
 # np.save(data_root + 'glove_fine_test.npy', glove_fine_test)
 
-class_fine_test =np.eye(180)
-class_fine = np.reshape(np.tile(class_fine_test,(42,1)),(7560,180))
-class_fine_test = np.reshape(np.tile(class_fine_test,(3,1)),(540,180)) 
-class_train = np.zeros((4530,180))
-
-print(class_fine_test.shape, class_train.shape)
+print(class_fine.shape, class_fine_test.shape, class_fine_test_two.shape)
 
 
 # data_train: (3903, 65730)

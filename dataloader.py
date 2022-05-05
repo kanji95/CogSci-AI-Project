@@ -167,8 +167,8 @@ def dataloader_sentence_word_split_new_matching_all_subjects(subject):
     tot_test= 0
     tot_fine_test = 0
     
-    if numb == 0:
-        return data_train, data_fine_test, glove_train, glove_fine_test, data_fine, data_fine_test, glove_fine, glove_fine_test
+    # if numb == 0:
+    #     return data_train, data_fine_test, glove_train, glove_fine_test, data_fine, data_fine_test, glove_fine, glove_fine_test
 
     for sub in subjects:
 
@@ -203,8 +203,6 @@ def dataloader_sentence_word_split_new_matching_all_subjects(subject):
                         holder = numb_tes
                     numb_test +=data.shape[0]
                     numb_tes += data.shape[0]
-                if fil.startswith('examples_180'):
-                    
             else:
                 if fil.startswith('data_180'):
                     Gordon, data = ROI_loader(sub,fil)
