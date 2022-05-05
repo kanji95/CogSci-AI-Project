@@ -34,6 +34,7 @@ def evaluate(
     total_loss = 0
     total_acc = 0
     total_acc5 = 0
+    total_acc10 = 0
     
     cross_entropy_loss = nn.CrossEntropyLoss()
     bce_loss = nn.BCELoss()
@@ -84,6 +85,7 @@ def evaluate(
         accuracy, accuracy_five, accuracy_ten = top_5(y_pred.detach().cpu().numpy(), word_label.detach().cpu().numpy())
         total_acc += accuracy
         total_acc5 += accuracy_five
+        total_acc10 += accuracy_ten
         
         num_examples += batch_size
 
@@ -103,11 +105,12 @@ def evaluate(
             
     val_acc = total_acc / data_len
     val_acc5 = total_acc5 / data_len
+    val_acc10 = total_acc10 / data_len
     val_loss = total_loss / data_len
 
     timestamp = datetime.now().strftime("%Y|%m|%d-%H:%M")
     print_(
-        f"{timestamp} Validation: EpochId: {epochId:2d} val_acc {val_acc:.4f} val_acc5 {val_acc5:.4f}"
+            f"{timestamp} Validation: EpochId: {epochId:2d} val_acc {val_acc:.4f} val_acc5 {val_acc5:.4f} val_acc10 {val_acc10:.4f}"
     )
     print_("============================================================================================================================================\n")
     
