@@ -24,7 +24,7 @@ from dataloader import FmriDataset
 
 from evaluate import evaluate
 # from losses import Loss
-from models.model import Baseline, ROIBaseline, SelfAttnROI, ROIAutoencoder
+from models.model import Baseline, ROIBaseline, SelfAttnROI, ROIAutoencoder, SelfAttnROIAutoencoder
 from train import train
 from utilities.utils import print_
 
