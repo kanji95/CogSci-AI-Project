@@ -70,9 +70,9 @@ def train(
         start_time = time()
         reg_out, y_pred = brain_model(fmri_scan)
 
-        indices_tuple = miner_func(reg_out, miner_label)
-        loss = contrastive_loss(reg_out, miner_label, indices_tuple) + cosine_embedding_loss(reg_out, glove_emb, target)
-        # loss = bce_loss(y_pred, word_label)
+        # indices_tuple = miner_func(reg_out, miner_label)
+        # loss = contrastive_loss(reg_out, miner_label, indices_tuple) + cosine_embedding_loss(reg_out, glove_emb, target)
+        loss = bce_loss(y_pred, word_label)
 
         loss.backward()
         if iterId % 500 == 0 and args.grad_check:
@@ -84,12 +84,12 @@ def train(
         elapsed_time = end_time - start_time
         
         accuracy, accuracy_five, accuracy_ten = top_5(y_pred.detach().cpu().numpy(), word_label.detach().cpu().numpy())
-        pair_accuracy = evaluation(reg_out.detach().cpu().numpy(), glove_emb.detach().cpu().numpy())
+        # pair_accuracy = evaluation(reg_out.detach().cpu().numpy(), glove_emb.detach().cpu().numpy())
 
         # print('Accuracy_top1: ' + str(accuracy) + ' Accuracy_top5: ' + str(accuracy_five) + 'Accuracy_top10: ' + str(accuracy_ten))
         
         total_acc += accuracy
-        total_pacc += pair_accuracy
+        # total_pacc += pair_accuracy
         total_loss += float(loss.item())
         
         num_examples += batch_size
