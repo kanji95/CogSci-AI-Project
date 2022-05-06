@@ -90,7 +90,8 @@ def main(args):
     # brain_model = Baseline()
     # brain_model = ROIBaseline()
     # brain_model = SelfAttnROI()
-    brain_model = ROIAutoencoder()
+    # brain_model = ROIAutoencoder()
+    brain_model = SelfAttnROIAutoencoder()
 
     wandb.watch(brain_model, log="all")
 
