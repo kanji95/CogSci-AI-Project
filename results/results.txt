@@ -1,1 +1,0 @@
-Here all the results will be stored after completing a run with any model.
