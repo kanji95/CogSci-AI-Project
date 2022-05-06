@@ -46,10 +46,10 @@ class ROIBaseline(nn.Module):
         self.num_rois = num_rois
 
         self.sizes = np.load(
-            "/home/kanishk/cogsci_project/pytorch_code/data/look_ups/sizes.npy"
+            "/home/kanishk/cogsci_project/data/look_ups/sizes.npy"
         )
         self.reduced = np.load(
-            "/home/kanishk/cogsci_project/pytorch_code/data/look_ups/reduced_sizes.npy"
+            "/home/kanishk/cogsci_project/data/look_ups/reduced_sizes.npy"
         )
 
         linear_layers = []
@@ -102,10 +102,10 @@ class SelfAttnROI(nn.Module):
         self.num_rois = num_rois
 
         self.sizes = np.load(
-            "/home/kanishk/cogsci_project/pytorch_code/data/look_ups/sizes.npy"
+            "/home/kanishk/cogsci_project/data/look_ups/sizes.npy"
         )
         self.reduced = np.load(
-            "/home/kanishk/cogsci_project/pytorch_code/data/look_ups/reduced_sizes.npy"
+            "/home/kanishk/cogsci_project/data/look_ups/reduced_sizes.npy"
         )
 
         linear_layers = []
