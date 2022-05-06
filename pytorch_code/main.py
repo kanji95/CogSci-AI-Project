@@ -159,7 +159,7 @@ def main(args):
     lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
         factor=args.gamma,
-        patience=2,
+        patience=10,
         threshold=1e-3,
         min_lr=1e-8,
         verbose=True,

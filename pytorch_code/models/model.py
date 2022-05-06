@@ -120,17 +120,19 @@ class SelfAttnROI(nn.Module):
             )
             concat_dim += self.reduced[i]
 
+        # print(concat_dim)
+
         self.encoder = nn.ModuleList(linear_layers)
         
-        self.multi_head_attn = nn.MultiheadAttention(concat_dim, 8, dropout=0.4)
+        self.multi_head_attn = nn.MultiheadAttention(concat_dim+3, 8)
         
         self.regressor = nn.Sequential(
-            nn.Linear(concat_dim, 1024), nn.BatchNorm1d(1024), nn.LeakyReLU(0.3),
+            nn.Linear(concat_dim+3, 1024), nn.BatchNorm1d(1024), nn.LeakyReLU(0.1),
             nn.Linear(1024, 300), 
         )
         self.classifier = nn.Linear(300, 180)
 
-        self.dropout = nn.Dropout(0.4)
+        self.dropout = nn.Dropout(0.2)
 
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(dim=-1)
@@ -146,7 +148,7 @@ class SelfAttnROI(nn.Module):
             index = new_index
 
         concat_out = torch.cat(outputs, dim=-1)
-        
+        concat_out = F.pad(concat_out, (1, 2), "constant", 0)
         concat_out = concat_out.unsqueeze(0)
         
         attn_output, _ = self.multi_head_attn(concat_out, concat_out, concat_out)

@@ -72,7 +72,7 @@ def train(
 
         # indices_tuple = miner_func(reg_out, miner_label)
         # loss = contrastive_loss(reg_out, miner_label, indices_tuple) + cosine_embedding_loss(reg_out, glove_emb, target)
-        loss = bce_loss(y_pred, word_label)
+        loss = bce_loss(y_pred, word_label) + cosine_embedding_loss(reg_out, glove_emb, target)
 
         loss.backward()
         if iterId % 500 == 0 and args.grad_check:
