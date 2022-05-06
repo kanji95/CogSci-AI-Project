@@ -24,7 +24,7 @@ from dataloader import FmriDataset
 
 from evaluate import evaluate
 # from losses import Loss
-from models.model import Baseline, ROIBaseline, SelfAttnROI
+from models.model import Baseline, ROIBaseline, SelfAttnROI, ROIAutoencoder
 from train import train
 from utilities.utils import print_
 
@@ -89,7 +89,8 @@ def main(args):
 
     # brain_model = Baseline()
     # brain_model = ROIBaseline()
-    brain_model = SelfAttnROI()
+    # brain_model = SelfAttnROI()
+    brain_model = ROIAutoencoder()
 
     wandb.watch(brain_model, log="all")
 

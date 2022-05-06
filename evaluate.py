@@ -38,7 +38,8 @@ def evaluate(
     total_pacc = 0
     
     cross_entropy_loss = nn.CrossEntropyLoss()
-    bce_loss = nn.BCELoss()
+    bce_loss = nn.BCELoss(reduction='sum')
+    smoothl1_loss = nn.SmoothL1Loss(reduction='sum')
 
     cosine_embedding_loss = nn.CosineEmbeddingLoss(margin=0.1)
     
@@ -71,13 +72,13 @@ def evaluate(
 
         start_time = time()
 
-        reg_out, y_pred = brain_model(fmri_scan)
+        recon_out, reg_out, y_pred = brain_model(fmri_scan)
         end_time = time()
         elapsed_time = end_time - start_time
         
         # indices_tuple = miner_func(reg_out, miner_label)
         # loss = contrastive_loss(reg_out, miner_label, indices_tuple) + cosine_embedding_loss(reg_out, glove_emb, target)
-        loss = bce_loss(y_pred, word_label)
+        loss = bce_loss(y_pred, word_label) + cosine_embedding_loss(reg_out, glove_emb, target) + smoothl1_loss(recon_out, fmri_scan)
 
         total_loss += float(loss.item())
 
