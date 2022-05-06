@@ -76,22 +76,22 @@ def evaluate(
         end_time = time()
         elapsed_time = end_time - start_time
         
-        # indices_tuple = miner_func(reg_out, miner_label)
-        # loss = contrastive_loss(reg_out, miner_label, indices_tuple) + cosine_embedding_loss(reg_out, glove_emb, target)
-        loss = bce_loss(y_pred, word_label) + cosine_embedding_loss(reg_out, glove_emb, target) + smoothl1_loss(recon_out, fmri_scan)
+        indices_tuple = miner_func(reg_out, miner_label)
+        loss = contrastive_loss(reg_out, miner_label, indices_tuple) + cosine_embedding_loss(reg_out, glove_emb, target)
+        # loss = bce_loss(y_pred, word_label) + cosine_embedding_loss(reg_out, glove_emb, target) + smoothl1_loss(recon_out, fmri_scan)
 
         total_loss += float(loss.item())
 
         # accuracy = (torch.argmax(y_pred) == word_label).sum()
 
         accuracy, accuracy_five, accuracy_ten = top_5(y_pred.detach().cpu().numpy(), word_label.detach().cpu().numpy())
-        # pair_accuracy = evaluation(reg_out.detach().cpu().numpy(), glove_emb.detach().cpu().numpy())
+        pair_accuracy = evaluation(reg_out.detach().cpu().numpy(), glove_emb.detach().cpu().numpy())
         # pair_accuracy = evaluation(reg_out, glove_emb)
         
         total_acc += accuracy
         total_acc5 += accuracy_five
         total_acc10 += accuracy_ten
-        # total_pacc += pair_accuracy
+        total_pacc += pair_accuracy
         
         num_examples += batch_size
 
@@ -122,4 +122,4 @@ def evaluate(
     )
     print_("============================================================================================================================================\n")
     
-    return val_loss, val_acc
+    return val_loss, val_pacc
