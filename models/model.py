@@ -252,7 +252,7 @@ class SelfAttnROIAutoencoder(nn.Module):
         self.encoder = nn.ModuleList(linear_layers)
         
         self.decoder = nn.Sequential(
-            nn.Linear(concat_dim + 3, 1024),
+            nn.Linear(concat_dim, 1024),
             nn.BatchNorm1d(1024), 
             nn.LeakyReLU(0.3),
             
@@ -261,8 +261,10 @@ class SelfAttnROIAutoencoder(nn.Module):
         
         self.multi_head_attn = nn.MultiheadAttention(concat_dim+3, 8)
         
+        # self.bilinear = nn.Bilinear(concat_dim, concat_dim, 1024)
+
         self.regressor = nn.Sequential(
-            nn.Linear(concat_dim+3, 1024), nn.BatchNorm1d(1024), nn.LeakyReLU(0.1),
+            nn.Linear(1024, 1024), nn.BatchNorm1d(1024), nn.LeakyReLU(0.1),
             nn.Linear(1024, 300), 
         )
         self.classifier = nn.Linear(300, 180)
@@ -283,14 +285,15 @@ class SelfAttnROIAutoencoder(nn.Module):
             index = new_index
 
         concat_out = torch.cat(outputs, dim=-1)
-        concat_out = F.pad(concat_out, (1, 2), "constant", 0)
-        concat_out = concat_out.unsqueeze(0)
+        concat_out_ = F.pad(concat_out, (1, 2), "constant", 0)
+        concat_out_ = concat_out_.unsqueeze(0)
         
-        attn_output, _ = self.multi_head_attn(concat_out, concat_out, concat_out)
+        # concat_out_ = self.bilinear(concat_out_, concat_out_)
+        attn_output, _ = self.multi_head_attn(concat_out_, concat_out_, concat_out_)
         
-        reg_out = self.regressor(self.dropout(attn_output[0]))
+        reg_out = self.regressor(attn_output[0])
         y_pred = self.softmax(self.classifier(reg_out))
         
-        recon_out = self.decoder(attn_output[0])
+        recon_out = self.decoder(concat_out)
 
         return recon_out, reg_out, y_pred
