@@ -60,6 +60,7 @@ def evaluate(
         batch = (x.cuda(non_blocking=True) for x in batch)
         fmri_scan, glove_emb, word_label = batch
 
+        miner_label = word_label
         batch_size = fmri_scan.shape[0]
 
         one_hot = torch.zeros((batch_size, 180)).cuda(non_blocking=True)
@@ -74,8 +75,8 @@ def evaluate(
         end_time = time()
         elapsed_time = end_time - start_time
         
-        indices_tuple = miner_func(reg_out, word_label)
-        loss = contrastive_loss(reg_out, word_label, indices_tuple) + cosine_embedding_loss(reg_out, glove_emb, target)
+        indices_tuple = miner_func(reg_out, miner_label)
+        loss = contrastive_loss(reg_out, miner_label, indices_tuple) + cosine_embedding_loss(reg_out, glove_emb, target)
         # loss = bce_loss(y_pred, word_label)
 
         total_loss += float(loss.item())
@@ -83,7 +84,8 @@ def evaluate(
         # accuracy = (torch.argmax(y_pred) == word_label).sum()
 
         accuracy, accuracy_five, accuracy_ten = top_5(y_pred.detach().cpu().numpy(), word_label.detach().cpu().numpy())
-        pair_accuracy = evaluation(reg_out, glove_emb)
+        pair_accuracy = evaluation(reg_out.detach().cpu().numpy(), glove_emb.detach().cpu().numpy())
+        # pair_accuracy = evaluation(reg_out, glove_emb)
         
         total_acc += accuracy
         total_acc5 += accuracy_five
@@ -119,4 +121,4 @@ def evaluate(
     )
     print_("============================================================================================================================================\n")
     
-    return val_loss, val_acc
+    return val_loss, val_pacc

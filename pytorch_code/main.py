@@ -87,8 +87,8 @@ def main(args):
 
     ####################### Model Initialization #######################
 
-    # brain_model = Baseline()
-    brain_model = ROIBaseline()
+    brain_model = Baseline()
+    # brain_model = ROIBaseline()
 
     wandb.watch(brain_model, log="all")
 
